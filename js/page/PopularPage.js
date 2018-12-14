@@ -68,7 +68,7 @@ class PopularTab extends Component<Props> {
             NavigationUtil.goPage({},'DetailPage')
           }}>跳转到详情页</Text>
           <Text onPress={()=>{
-            navigation.navigate('PopularTab2')
+            NavigationUtil.resetDetail()
           }}>跳转tab2</Text>
         </View>
     );

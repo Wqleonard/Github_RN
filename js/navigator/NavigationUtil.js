@@ -54,4 +54,12 @@ export default class NavigationUtil{
             })
         }
     }
+
+    /**
+     * 跳转至Detail页并替换
+     * @param navigation
+     */
+    static resetDetail(){
+        NavigationUtil.navigation.replace('DetailPage')
+    }
 }
