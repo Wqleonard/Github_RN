@@ -8,7 +8,7 @@
 
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
-import {createMaterialTopTabNavigator}  from 'react-navigation'
+import {createMaterialTopTabNavigator,createAppContainer}  from 'react-navigation'
 import NavigationUtil from "../navigator/NavigationUtil";
 import DetailPage from "./DetailPage";
 
@@ -31,7 +31,7 @@ export default class PopularPage extends Component<Props> {
     return tabs
   }
   render() {
-    const TabNavigator=createMaterialTopTabNavigator(
+    const TabNavigator=createAppContainer(createMaterialTopTabNavigator(
         this._getTabs(),{
           tabBarOptions:{
             tabStyle:styles.tabStyle,
@@ -44,7 +44,7 @@ export default class PopularPage extends Component<Props> {
             labelStyle:styles.labelStyle,//文字的样式
           }
         }
-    )
+    ))
     return (
         <View
             style={{flex: 1,marginTop: 30}}

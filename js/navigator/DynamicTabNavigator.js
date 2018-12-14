@@ -10,11 +10,12 @@ import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import {
   createBottomTabNavigator,
+    createAppContainer,
 } from 'react-navigation'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import Entypo from 'react-native-vector-icons/Entypo'
-import {BottomTabBar} from 'react-navigation/node_modules/react-navigation-tabs'
+import {BottomTabBar} from 'react-navigation-tabs'
 import PopularPage from '../page/PopularPage'
 import TrendingPage from '../page/TrendingPage'
 import FavoritePage from '../page/FavoritePage'
@@ -84,9 +85,9 @@ export default class DynamicTabNavigator extends Component<Props> {
     const {PopularPage,TrendingPage,FavoritePage,MyPage}=TABS
     const tabs={PopularPage,TrendingPage,FavoritePage,MyPage}//根据需要定制显示的tabs
     // PopularPage.navigationOptions.tabBarLabel='最新' 动态修改tab的属性
-    return createBottomTabNavigator(tabs,{
+    return createAppContainer(createBottomTabNavigator(tabs,{
       tabBarComponent:TabBarComponent
-    })
+    }))
   }
 
   render() {
