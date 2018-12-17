@@ -9,7 +9,7 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import {
-  createBottomTabNavigator,
+    createBottomTabNavigator,
     createAppContainer,
 } from 'react-navigation'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
