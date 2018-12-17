@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import {Platform, StyleSheet, Text, View,Button} from 'react-native';
 import {createMaterialTopTabNavigator,createAppContainer}  from 'react-navigation'
 import NavigationUtil from "../navigator/NavigationUtil";
 import DetailPage from "./DetailPage";
@@ -67,9 +67,17 @@ class PopularTab extends Component<Props> {
           <Text onPress={()=>{
             NavigationUtil.goPage({},'DetailPage')
           }}>跳转到详情页</Text>
-          <Text onPress={()=>{
-            NavigationUtil.replaceDetail()
-          }}>跳转tab2</Text>
+          <Button
+              title='Fetch使用'
+              onPress={()=>{
+                NavigationUtil.goPage({navigation:this.props.navigation},'FetchDemoPage')
+          }}/>
+          <Button
+              title={'离线缓存框架 使用'}
+              onPress={()=>{
+                NavigationUtil.goPage({navigation:this.props.navigation},'DataStoreDemoPage')
+              }}
+          />
         </View>
     );
   }
