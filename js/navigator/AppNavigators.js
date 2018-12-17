@@ -1,13 +1,16 @@
 import {
     createStackNavigator,
-    createMaterialTopTabNavigator,
-    createBottomTabNavigator,
+    // createMaterialTopTabNavigator,
+    // createBottomTabNavigator,
     createSwitchNavigator,
     createAppContainer
 } from 'react-navigation'
+import {connect} from 'react-redux'
+import {createReactNavigationReduxMiddleware,reduxifyNavigator} from 'react-navigation-redux-helpers'
 import WelcomePage from '../page/WelcomePage'
 import HomePage from '../page/HomePage'
 import DetailPage from '../page/DetailPage'
+export const rootCom='Init'
 const InitNavigator=createStackNavigator({
     WelcomePage:{
         screen:WelcomePage,
@@ -32,7 +35,7 @@ const MainNavigator=createStackNavigator({
     }
 })
 
-export default createAppContainer(createSwitchNavigator({
+export const RootNavigator= createAppContainer(createSwitchNavigator({
     Init:InitNavigator,
     Main:MainNavigator,
 }, {
@@ -41,3 +44,14 @@ export default createAppContainer(createSwitchNavigator({
       }
    }
 ))
+//nav是react-navigation里的一个属性
+export const middleware=createReactNavigationReduxMiddleware(
+    'root',
+    state=>state.nav
+)
+
+const AppWithNavigationState=reduxifyNavigator(RootNavigator,'root')
+const mapStateProps=state=>({
+    state:state.nav,//v2
+})
+export default connect(mapStateProps)(AppWithNavigationState)

@@ -16,6 +16,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import Entypo from 'react-native-vector-icons/Entypo'
 import {BottomTabBar} from 'react-navigation-tabs'
+import {connect} from 'react-redux'
 import PopularPage from '../page/PopularPage'
 import TrendingPage from '../page/TrendingPage'
 import FavoritePage from '../page/FavoritePage'
@@ -75,19 +76,22 @@ const TABS={
   },
 }
 
-export default class DynamicTabNavigator extends Component<Props> {
+class DynamicTabNavigator extends Component<Props> {
   constructor(props){
     super(props)
     console.disableYellowBox=true
   }
 
   _tabNavigator(){
-    const {PopularPage,TrendingPage,FavoritePage,MyPage}=TABS
-    const tabs={PopularPage,TrendingPage,FavoritePage,MyPage}//根据需要定制显示的tabs
-    // PopularPage.navigationOptions.tabBarLabel='最新' 动态修改tab的属性
-    return createAppContainer(createBottomTabNavigator(tabs,{
-      tabBarComponent:TabBarComponent
-    }))
+    if(!this.tabs){
+      const {PopularPage,TrendingPage,FavoritePage,MyPage}=TABS
+      const tabs={PopularPage,TrendingPage,FavoritePage,MyPage}//根据需要定制显示的tabs
+      // PopularPage.navigationOptions.tabBarLabel='最新' 动态修改tab的属性
+      this.tabs=createAppContainer(createBottomTabNavigator(tabs,{
+        tabBarComponent:props=><TabBarComponent theme={this.props.theme} {...props}/>
+      }))
+    }
+   return this.tabs
   }
 
   render() {
@@ -105,32 +109,23 @@ class TabBarComponent extends React.Component {
      }
    }
    render() {
-     const {routes,index}=this.props.navigation.state
-     if(routes[index].params){
-       const {theme}=routes[index].params
-       //以最新的更新时间为主，防止被其它tab之前的修改覆盖掉
-       if(theme && theme.updateTime>this.theme.updateTime){
-         this.theme=theme
-       }
-     }
+     // const {routes,index}=this.props.navigation.state
+     //      // if(routes[index].params){
+     //      //   const {theme}=routes[index].params
+     //      //   //以最新的更新时间为主，防止被其它tab之前的修改覆盖掉
+     //      //   if(theme && theme.updateTime>this.theme.updateTime){
+     //      //     this.theme=theme
+     //      //   }
+     //      // }
      return <BottomTabBar
              {...this.props}
-             inactiveTintColor={this.theme.inactiveTintColor || this.props.inactiveTintColor}
-             activeTintColor={this.theme.activeTintColor || this.props.activeTintColor}
+             // inactiveTintColor={this.theme.inactiveTintColor || this.props.inactiveTintColor}
+             activeTintColor={this.props.theme || this.props.activeTintColor}
          />
    }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-});
+// state.theme是指theme reducer，还有其他reducer，再.theme拿到theme值
+const mapStateToProps=state=>({
+  theme:state.theme.theme
+})
+export default connect(mapStateToProps)(DynamicTabNavigator)
