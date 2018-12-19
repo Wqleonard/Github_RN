@@ -8,6 +8,7 @@
 
 import React, {Component} from 'react';
 import {Button, Platform, StyleSheet, Text, View} from 'react-native';
+import NavigationUtil from "../navigator/NavigationUtil";
 
 
 type Props = {};
@@ -17,18 +18,25 @@ export default class MyPage extends Component<Props> {
     return (
       <View style={styles.container}>
          <Text style={styles.welcome}>MyPage</Text>
-        <Button
-            title={'改变主题颜色'}
-            onPress={()=>{
-              navigation.setParams({
-                theme:{
-                  activeTintColor:'blue',
-                  // inactiveTintColor:'grey',
-                  updateTime:new Date().getTime()
-                }
-              })
-            }}
-        />
+          <Text onPress={()=>{
+              NavigationUtil.goPage({},'DetailPage')
+          }}>跳转到详情页</Text>
+          <Button
+              title='Fetch 使用'
+              onPress={()=>{
+                  NavigationUtil.goPage({navigation:this.props.navigation},'FetchDemoPage')
+              }}/>
+          <Button
+              title='AsyncStorage 使用'
+              onPress={()=>{
+                  NavigationUtil.goPage({navigation:this.props.navigation},'AsyncStorageDemoPage')
+              }}/>
+          <Button
+              title={'离线缓存框架 使用'}
+              onPress={()=>{
+                  NavigationUtil.goPage({navigation:this.props.navigation},'DataStoreDemoPage')
+              }}
+          />
       </View>
     );
   }
