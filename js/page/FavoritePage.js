@@ -6,34 +6,36 @@
  * @flow
  */
 
-import React, {Component} from 'react';
-import {Button, Platform, StyleSheet, Text, View} from 'react-native';
-import actions from "../action";
-import {connect} from "react-redux";
+import React, { Component } from 'react'
+import {
+  Button, Platform, StyleSheet, Text, View,
+} from 'react-native'
+import { connect } from 'react-redux'
+import actions from '../action'
 
 
 type Props = {};
 class FavoritePage extends Component<Props> {
   render() {
-    const {navigation}=this.props
+    const { navigation } = this.props
     return (
       <View style={styles.container}>
-         <Text style={styles.welcome}>FavoritePage</Text>
+        <Text style={styles.welcome}>FavoritePage</Text>
         <Button
-            title={'改变主题颜色'}
-            onPress={()=>{
-              // navigation.setParams({
-              //   theme:{
-              //     activeTintColor:'green',
-              //     // inactiveTintColor:'grey',
-              //     updateTime:new Date().getTime()
-              //   }
-              // })
-                this.props.onThemeChange('red')
-            }}
+          title='改变主题颜色'
+          onPress={() => {
+            // navigation.setParams({
+            //   theme:{
+            //     activeTintColor:'green',
+            //     // inactiveTintColor:'grey',
+            //     updateTime:new Date().getTime()
+            //   }
+            // })
+            this.props.onThemeChange('red')
+          }}
         />
       </View>
-    );
+    )
   }
 }
 
@@ -49,11 +51,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     margin: 10,
   },
-});
-const mapStateToProps=state=>({
+})
+const mapStateToProps = state => ({
 
 })
-const mapDispatchToProps=dispatch=>({
-    onThemeChange: theme=>dispatch(actions.onThemeChange(theme))
+const mapDispatchToProps = dispatch => ({
+  onThemeChange: theme => dispatch(actions.onThemeChange(theme)),
 })
-export default connect(mapStateToProps,mapDispatchToProps)(FavoritePage)
+export default connect(mapStateToProps, mapDispatchToProps)(FavoritePage)

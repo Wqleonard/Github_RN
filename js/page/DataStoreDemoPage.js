@@ -8,7 +8,7 @@
 
 import React, {Component} from 'react';
 import {Button, Platform, StyleSheet, Text, View,TextInput} from 'react-native';
-import DataStore from '../expand/dao/dataStore'
+import DataStore from '../expand/dao/DataStore'
 
 type Props = {};
 export default class DataStoreDemoPage extends Component<Props> {

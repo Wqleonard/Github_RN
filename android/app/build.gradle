@@ -73,7 +73,7 @@ import com.android.build.OutputFile
  */
 
 project.ext.react = [
-    entryFile: "dataStore.js"
+    entryFile: "DataStore.js"
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
