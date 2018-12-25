@@ -100,7 +100,7 @@ export default class DetailPage extends Component<Props> {
         </View>
     )
   }
-  
+
   render() {
     const titleLayoutStyle=this.state.title.length>20?{paddingRight: 30}:null
     const navigationBar = (

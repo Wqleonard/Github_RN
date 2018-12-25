@@ -89,7 +89,7 @@ export default class FavoriteDao {
             if (!error) {
               try {
                 for (const item of stores) {
-                  if (item[1]) items.push(item[1])
+                  if (item[1]) items.push(JSON.parse(item[1]))
                 }
                 resolve(items)
               } catch (e) {

@@ -27,7 +27,7 @@ import FavoriteUtil from "../util/FavoriteUtil";
 import {FLAG_STORAGE} from "../expand/dao/DataStore";
 import PopularItem from "../common/PopularItem";
 import FavoriteDao from "../expand/dao/FavoriteDao";
-const favoriteDao=new FavoriteDao(FLAG_STORAGE.flag_popular)
+const favoriteDao=new FavoriteDao(FLAG_STORAGE.flag_trending)
 const URL = 'https://github.com/trending/'
 // const QUERY_STR = '&sort=stars'
 type Props = {};
@@ -230,7 +230,7 @@ class TrendingTab extends Component<Props> {
                 <FlatList
                     data={store.projectModels}
                     renderItem={item => this.renderItem(item)}
-                    keyExtractor={item => `${item.id||item.fullName}`}
+                    keyExtractor={item => `trending${item.item.id||item.item.fullName}`}
                     refreshControl={(
                         <RefreshControl
                             title='Loading...'

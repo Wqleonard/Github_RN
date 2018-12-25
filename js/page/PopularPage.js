@@ -170,7 +170,7 @@ class PopularTab extends Component<Props> {
         <FlatList
           data={store.projectModels}
           renderItem={item => this.renderItem(item)}
-          keyExtractor={item => `${item.item.id}`}
+          keyExtractor={item => `popular${item.item.id}`}
           refreshControl={(
             <RefreshControl
               title='Loading...'
