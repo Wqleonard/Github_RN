@@ -5,11 +5,7 @@
  * @format
  * @flow
  */
-
 import React, { Component } from 'react'
-import {
-  Platform, StyleSheet, Text, View,
-} from 'react-native'
 import {
   createBottomTabNavigator,
   createAppContainer,
@@ -23,6 +19,8 @@ import PopularPage from '../page/PopularPage'
 import TrendingPage from '../page/TrendingPage'
 import FavoritePage from '../page/FavoritePage'
 import MyPage from '../page/MyPage'
+import EventBus from 'react-native-event-bus'
+import EventTypes from '../util/EventTypes'
 // import NavigationUtil from "./NavigationUtil";
 type Props = {};
 const TABS = {
@@ -109,7 +107,16 @@ class DynamicTabNavigator extends Component<Props> {
 
   render() {
     const Tab = this._tabNavigator()
-    return <Tab />
+    return (
+        <Tab
+            onNavigationStateChange={(preState,newState,action)=>{
+                EventBus.getInstance().fireEvent(EventTypes.bottom_tab_select,{//发送底部tab切换的事件
+                    from:preState.index,
+                    to:newState.index
+                })
+            }}
+        />
+    )
   }
 }
 

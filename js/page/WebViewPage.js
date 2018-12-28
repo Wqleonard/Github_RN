@@ -21,19 +21,15 @@ import BackPressComponent from "../common/BackPressComponent";
 import FavoriteDao from "../expand/dao/FavoriteDao";
 import FavoriteUtil from "../util/FavoriteUtil";
 
-export default class DetailPage extends Component<Props> {
+export default class WebViewPage extends Component<Props> {
   constructor(props) {
     super(props)
     this.params = this.props.navigation.state.params
-    const { projectModel,flag } = this.params
-    this.favoriteDao=new FavoriteDao(flag)
-    this.url = projectModel.item.html_url || TRENDING_URL + projectModel.item.fullName
-    const title = projectModel.item.full_name || projectModel.item.fullName
+    const {title,url}=this.params
     this.state = {
       title,
-      url:this.url,
+      url,
       canGoBack:false,
-      isFavorite:projectModel.isFavorite
     }
     this.backPress=new BackPressComponent({backPress:()=>this.onBackPress()})
   }
@@ -68,48 +64,13 @@ export default class DetailPage extends Component<Props> {
      })
   }
 
-  onFavoriteButtonClick(){
-    const {projectModel,flag,callback}=this.params
-    // const isFavorite=projectModel.isFavorite=!projectModel.isFavorite 通过callback回调会给原属性的isFavorite重新赋值，此处可先不作赋值操作
-    const isFavorite=projectModel.isFavorite=!projectModel.isFavorite
-    callback(isFavorite)
-    this.setState({
-      isFavorite,
-    })
-    // const key=projectModel.item.fullName?projectModel.item.fullName:projectModel.item.id.toString()
-    FavoriteUtil.onFavorite(this.favoriteDao,projectModel.item,isFavorite,flag)
-  }
-
-  renderRightButton(){
-    return(
-        <View style={{flexDirection: 'row'}}>
-           <TouchableOpacity
-             onPress={()=>this.onFavoriteButtonClick()}
-           >
-             <FontAwesome
-                name={this.state.isFavorite?'star':'star-o'}
-                size={20}
-                style={{color:'white',marginRight: 10}}
-             />
-           </TouchableOpacity>
-          {
-            ViewUtil.getShareButton(()=>{
-
-            })
-          }
-        </View>
-    )
-  }
 
   render() {
-    const titleLayoutStyle=this.state.title.length>20?{paddingRight: 30}:null
     const navigationBar = (
       <NavigationBar
         title={this.state.title}
-        titleLayoutStyle={titleLayoutStyle}
-        leftButton={ViewUtil.getLeftBackButton(() => this.onBack())}
-        rightButton={this.renderRightButton()}
         style={{ backgroundColor: THEME_COLOR,paddingTop: DeviceInfo.isIPhoneX_deprecated?30:0, }}
+        leftButton={ViewUtil.getLeftBackButton(()=>{this.onBack()})}
       />
     )
     return (

@@ -62,6 +62,28 @@ export function onLoadMorePopular(storeName, pageIndex, pageSize, dataArray = []
     }, 500)
   }
 }
+
+/**
+ *刷新收藏状态  更加载更多类似的action，但是不是请求下一页，而是既有数据的重新显示并仍显示到当前页
+ * @param storeName
+ * @param pageIndex 第几页
+ * @param pageSize 每页展示条数
+ * @param dataArray 原始数据
+ * @param favoriteDao
+ */
+export function onFlushPopularFavorite(storeName, pageIndex, pageSize, dataArray = [], favoriteDao) {
+  return (dispatch) => {
+    const max = pageSize * pageIndex > dataArray.length ? dataArray.length : pageSize * pageIndex
+    _projectModels(dataArray.slice(0, max), favoriteDao, (projectModels) => {
+      dispatch({
+        type: Types.FLUSH_POPULAR_FAVORITE,
+        storeName,
+        // pageIndex,
+        projectModels,
+      })
+    })
+  }
+}
 // // 第一次加载数据时调用的
 // function handleData(dispatch, storeName, data, pageSize) {
 //     let fixItems = []

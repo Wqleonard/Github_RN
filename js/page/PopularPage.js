@@ -23,6 +23,9 @@ import NavigationUtil from "../navigator/NavigationUtil";
 import FavoriteDao from "../expand/dao/FavoriteDao";
 import {FLAG_STORAGE} from "../expand/dao/DataStore";
 import FavoriteUtil from "../util/FavoriteUtil";
+import EventBus from "react-native-event-bus";
+import EventTypes from "../util/EventTypes";
+import GlobalStyles from "../res/styles/GlobalStyles";
 const favoriteDao=new FavoriteDao(FLAG_STORAGE.flag_popular)
 const URL = 'https://api.github.com/search/repositories?&q='
 const QUERY_STR = '&sort=stars'
@@ -62,7 +65,7 @@ export default class PopularPage extends Component<Props> {
             <NavigationBar
                 title='最热'
                 statusBar={statusBar}
-                style={{backgroundColor:THEME_COLOR}}
+                style={{backgroundColor:THEME_COLOR,paddingTop: DeviceInfo.isIPhoneX_deprecated?30:0}}
             />
     const TabNavigator = createAppContainer(createMaterialTopTabNavigator(
       this._getTabs(), {
@@ -81,7 +84,7 @@ export default class PopularPage extends Component<Props> {
     ))
     return (
       <View
-        style={{ flex: 1, marginTop: DeviceInfo.isIPhoneX_deprecated?30:0 }}
+        style={{ flex: 1 }}
       >
           {navigationBar}
         <TabNavigator />
@@ -95,14 +98,27 @@ class PopularTab extends Component<Props> {
     super(props)
     const { tabLabel } = this.props
     this.storeName = tabLabel
-    // NavigationUtil.navigationTab=props.navigation
+    this.isFacoriteChanged=false
   }
 
   componentDidMount(): void {
     this.loadData()
+      EventBus.getInstance().addListener(EventTypes.favorite_changed_popular,this.favoriteChangedListener=()=>{
+          this.isFacoriteChanged=true
+      })
+      EventBus.getInstance().addListener(EventTypes.bottom_tab_select,this.bottomTabSelectListener=data=>{
+          if(data.to===0&&this.isFacoriteChanged){
+              this.loadData(false,true)
+          }
+      })
   }
 
-  _store() {
+  componentWillUnmount(): void {
+      EventBus.getInstance().removeListener(this.favoriteChangedListener)
+      EventBus.getInstance().removeListener(this.bottomTabSelectListener)
+  }
+
+    _store() {
     const { popular } = this.props
     let store = popular[this.storeName]// 动态获取state
     if (!store) {
@@ -132,14 +148,17 @@ class PopularTab extends Component<Props> {
       )
   }
 
-  loadData(loadMore) {
-    const { onRefreshPopular, onLoadMorePopular } = this.props
+  loadData(loadMore,refreshFavorite) {
+    const { onRefreshPopular, onLoadMorePopular,onFlushPopularFavorite } = this.props
     const store = this._store()
     const url = this.getFetchUrl(this.storeName)
     if (loadMore) {
-      onLoadMorePopular(this.storeName, ++store.pageIndex, pageSize, store.items,favoriteDao, (callback) => {
-        this.refs.toast.show('没有更多了')
-      })
+        onLoadMorePopular(this.storeName, ++store.pageIndex, pageSize, store.items, favoriteDao, (callback) => {
+            this.refs.toast.show('没有更多了')
+        })
+    } else if(refreshFavorite){
+      //若直接调用刷新dispatch则会回到第一页，仍定位在当前页，不请求下一页，也不显示加载更多菊花
+      onFlushPopularFavorite(this.storeName, store.pageIndex, pageSize, store.items, favoriteDao)
     } else {
       onRefreshPopular(this.storeName, url, pageSize,favoriteDao)
     }
@@ -166,7 +185,7 @@ class PopularTab extends Component<Props> {
   render() {
     const store = this._store()
     return (
-      <View style={styles.container}>
+      <View style={GlobalStyles.root_container}>
         <FlatList
           data={store.projectModels}
           renderItem={item => this.renderItem(item)}
@@ -215,6 +234,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   onRefreshPopular: (storeName, url, pageSize,favoriteDao) => dispatch(actions.onRefreshPopular(storeName, url, pageSize,favoriteDao)),
   onLoadMorePopular: (storeName, pageIndex, pageSize, items,favoriteDao, callback) => dispatch(actions.onLoadMorePopular(storeName, pageIndex, pageSize, items,favoriteDao, callback)),
+  onFlushPopularFavorite: (storeName, pageIndex, pageSize, items,favoriteDao) => dispatch(actions.onFlushPopularFavorite(storeName, pageIndex, pageSize, items,favoriteDao)),
 })
 // connect只是一个function,并不一定非要放在export后面
 const PopularTabPage = connect(mapStateToProps, mapDispatchToProps)(PopularTab)

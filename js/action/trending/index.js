@@ -63,6 +63,20 @@ export function onLoadMoreTrending(storeName, pageIndex, pageSize, dataArray = [
     }, 500)
   }
 }
+
+export function onFlushTrendingFavorite(storeName, pageIndex, pageSize, dataArray = [], favoriteDao) {
+  return (dispatch) => {
+    const max = pageSize * pageIndex > dataArray.length ? dataArray.length : pageSize * pageIndex
+    _projectModels(dataArray.slice(0, max), favoriteDao, (projectModels) => {
+      dispatch({
+        type: Types.FLUSH_TRENDING_FAVORITE,
+        storeName,
+        // pageIndex,
+        projectModels,
+      })
+    })
+  }
+}
 // // 第一次加载数据时调用的
 // function handleData(dispatch, storeName, data, pageSize) {
 //   let fixItems = []

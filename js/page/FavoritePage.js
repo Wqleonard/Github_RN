@@ -24,7 +24,9 @@ import FavoriteDao from "../expand/dao/FavoriteDao";
 import {FLAG_STORAGE} from "../expand/dao/DataStore";
 import FavoriteUtil from "../util/FavoriteUtil";
 import TrendingItem from "../common/TrendingItem";
-const favoriteDao=new FavoriteDao(FLAG_STORAGE.flag_popular)
+import EventBus from 'react-native-event-bus'
+import EventTypes from "../util/EventTypes";
+import GlobalStyles from "../res/styles/GlobalStyles";
 const URL = 'https://api.github.com/search/repositories?&q='
 const QUERY_STR = '&sort=stars'
 type Props = {};
@@ -52,7 +54,7 @@ export default class FavoritePage extends Component<Props> {
             <NavigationBar
                 title='最热'
                 statusBar={statusBar}
-                style={{backgroundColor:THEME_COLOR}}
+                style={{backgroundColor:THEME_COLOR, paddingTop: DeviceInfo.isIPhoneX_deprecated?30:0}}
             />
     const TabNavigator = createAppContainer(createMaterialTopTabNavigator({
         'Popular':{
@@ -71,7 +73,6 @@ export default class FavoritePage extends Component<Props> {
         tabBarOptions: {
           tabStyle: styles.tabStyle,
           upperCaseLabel: false, // 是否标签大写，默认为true大写
-          scrollEnabled: true, // 是否支持滚动，默认为false不滚动 android上会出问题，在style里设置一个高度
           style: {
             backgroundColor: THEME_COLOR, // tabBar背景色
             height: 30,//fix 开启scrollEnabled后在android上初次加载闪烁的问题
@@ -83,7 +84,7 @@ export default class FavoritePage extends Component<Props> {
     ))
     return (
       <View
-        style={{ flex: 1, marginTop: DeviceInfo.isIPhoneX_deprecated?30:0 }}
+        style={{ flex: 1}}
       >
           {navigationBar}
         <TabNavigator />
@@ -102,9 +103,18 @@ class FavoriteTab extends Component<Props> {
 
   componentDidMount(): void {
     this.loadData()
+      EventBus.getInstance().addListener(EventTypes.bottom_tab_select,this.listener=data=>{
+          if(data.to===2){
+              this.loadData(false)
+          }
+      } )
   }
 
-  _store() {
+  componentWillUnmount(): void {
+      EventBus.getInstance().removeListener(this.listener)
+  }
+
+    _store() {
     const { favorite } = this.props
     let store = favorite[this.storeName]// 动态获取state
     if (!store) {
@@ -122,6 +132,15 @@ class FavoriteTab extends Component<Props> {
       onLoadFavoriteData(this.storeName,isShowLoading)
   }
 
+  onFavorite(item,isFavorite){
+      FavoriteUtil.onFavorite(this.favoriteDao,item,isFavorite,this.storeName)
+      if(this.storeName===FLAG_STORAGE.flag_popular){
+          EventBus.getInstance().fireEvent(EventTypes.favorite_changed_popular)
+      }else{
+          EventBus.getInstance().fireEvent(EventTypes.favorite_changed_trending)
+      }
+  }
+
   renderItem({ item }) {
     const Item=this.storeName===FLAG_STORAGE.flag_popular?PopularItem:TrendingItem
     return (
@@ -135,7 +154,7 @@ class FavoriteTab extends Component<Props> {
             },'DetailPage')
         }}
         onFavorite={(item,isFavorite)=>{
-            FavoriteUtil.onFavorite(favoriteDao,item,isFavorite,this.storeName)
+            this.onFavorite(item,isFavorite)
         }}
       />
     )
@@ -144,7 +163,7 @@ class FavoriteTab extends Component<Props> {
   render() {
     const store = this._store()
     return (
-      <View style={styles.container}>
+      <View style={GlobalStyles.root_container}>
         <FlatList
           data={store.projectModels}
           renderItem={item => this.renderItem(item)}

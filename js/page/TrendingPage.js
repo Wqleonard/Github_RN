@@ -27,6 +27,9 @@ import FavoriteUtil from "../util/FavoriteUtil";
 import {FLAG_STORAGE} from "../expand/dao/DataStore";
 import PopularItem from "../common/PopularItem";
 import FavoriteDao from "../expand/dao/FavoriteDao";
+import EventBus from "react-native-event-bus";
+import EventTypes from "../util/EventTypes";
+import GlobalStyles from "../res/styles/GlobalStyles";
 const favoriteDao=new FavoriteDao(FLAG_STORAGE.flag_trending)
 const URL = 'https://github.com/trending/'
 // const QUERY_STR = '&sort=stars'
@@ -127,12 +130,12 @@ export default class TrendingPage extends Component<Props> {
             <NavigationBar
                 titleView={this.renderTitleView()}
                 statusBar={statusBar}
-                style={{backgroundColor:THEME_COLOR}}
+                style={{backgroundColor:THEME_COLOR, paddingTop: DeviceInfo.isIPhoneX_deprecated?30:0}}
             />
 
         return (
             <View
-                style={{ flex: 1, marginTop: DeviceInfo.isIPhoneX_deprecated?30:0 }}
+                style={{ flex: 1 }}
             >
                 {navigationBar}
                 <this.tabNav />
@@ -152,6 +155,14 @@ class TrendingTab extends Component<Props> {
 
     componentDidMount(): void {
         this.loadData()
+        EventBus.getInstance().addListener(EventTypes.favorite_changed_trending,this.favoriteChangedListener=()=>{
+            this.isFacoriteChanged=true
+        })
+        EventBus.getInstance().addListener(EventTypes.bottom_tab_select,this.bottomTabSelectListener=data=>{
+            if(data.to===1&&this.isFacoriteChanged){
+                this.loadData(false,true)
+            }
+        })
         this.timeSpanChangeListener=DeviceEventEmitter.addListener(EVENT_TYPE_TIME_SPAN_CHANGE,(timeSpan)=>{
            this.timeSpan=timeSpan
             this.loadData()
@@ -159,7 +170,9 @@ class TrendingTab extends Component<Props> {
     }
 
    componentWillUnmount(): void {
-        this.timeSpanChangeListener && this.timeSpanChangeListener.remove()
+       this.timeSpanChangeListener && this.timeSpanChangeListener.remove()
+       EventBus.getInstance().removeListener(this.favoriteChangedListener)
+       EventBus.getInstance().removeListener(this.bottomTabSelectListener)
    }
 
     _store() {
@@ -192,15 +205,18 @@ class TrendingTab extends Component<Props> {
             )
     }
 
-    loadData(loadMore) {
-        const {onRefreshTrending, onLoadMoreTrending } = this.props
+    loadData(loadMore, refreshFavorite) {
+        const {onRefreshTrending, onLoadMoreTrending,onFlushTrendingFavorite } = this.props
         const store = this._store()
         const url = this.getFetchUrl(this.storeName)
         if (loadMore) {
             onLoadMoreTrending(this.storeName, ++store.pageIndex, pageSize, store.items,favoriteDao, (callback) => {
                 this.refs.toast.show('没有更多了')
             })
-        } else {
+        } else if(refreshFavorite){
+            //若直接调用刷新dispatch则会回到第一页，仍定位在当前页，不请求下一页，也不显示加载更多菊花
+            onFlushTrendingFavorite(this.storeName, store.pageIndex, pageSize, store.items, favoriteDao)
+        }else {
             onRefreshTrending(this.storeName, url, pageSize,favoriteDao)
         }
     }
@@ -226,7 +242,7 @@ class TrendingTab extends Component<Props> {
     render() {
         const store = this._store()
         return (
-            <View style={styles.container}>
+            <View style={GlobalStyles.root_container}>
                 <FlatList
                     data={store.projectModels}
                     renderItem={item => this.renderItem(item)}
@@ -275,6 +291,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     onRefreshTrending: (storeName, url, pageSize,favoriteDao) => dispatch(actions.onRefreshTrending(storeName, url, pageSize,favoriteDao)),
     onLoadMoreTrending: (storeName, pageIndex, pageSize, items,favoriteDao, callback) => dispatch(actions.onLoadMoreTrending(storeName, pageIndex, pageSize, items,favoriteDao, callback)),
+    onFlushTrendingFavorite: (storeName, pageIndex, pageSize, items,favoriteDao) => dispatch(actions.onFlushTrendingFavorite(storeName, pageIndex, pageSize, items,favoriteDao)),
 })
 // connect只是一个function,并不一定非要放在export后面
 const TrendingTabPage = connect(mapStateToProps, mapDispatchToProps)(TrendingTab)
