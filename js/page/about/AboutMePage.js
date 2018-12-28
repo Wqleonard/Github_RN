@@ -10,9 +10,9 @@
 import React, { Component } from 'react'
 import {
     ScrollView, StyleSheet, Text, View, TouchableOpacity, DeviceInfo
-    ,Linking
+    ,Linking,Clipboard
 } from 'react-native'
-
+import Toast from 'react-native-easy-toast'
 import Ionicons from 'react-native-vector-icons/Ionicons'
 import {MORE_MENU} from '../../common/MORE_MENU'
 import GlobalStyles from '../../res/styles/GlobalStyles';
@@ -20,6 +20,7 @@ import ViewUtil from '../../util/ViewUtil'
 import NavigationUtil from '../../navigator/NavigationUtil';
 import AboutCommon, {FLAG_ABOUT} from "./AboutCommon";
 import config from '../../res/data/config'
+import WebViewPage from "../WebViewPage";
 const THEME_COLOR = '#678'
 type Props = {};
 export default class AboutMePage extends Component<Props> {
@@ -60,32 +61,34 @@ export default class AboutMePage extends Component<Props> {
     }
 
 
-       onClick(menu){
-          let RouteName,params={}
-          switch (menu) {
-              case MORE_MENU.Tutorial:
-                  RouteName='WebViewPage'
-                  params.title='教程'
-                  params.url='https://coding.m.imooc.com/classindex.html?cid=89'
-                  break
-              case MORE_MENU.Feedback:
-                  const url='mailto://crazycodeboy@gmail.com'
-                 Linking.canOpenURL(url)
-                     .then(support=>{
-                         if(!support){
-                             console.log('Can\'t handle url:'+url)
-                         }else{
-                             Linking.openURL(url)
-                         }
-                     })
-                     .catch(e=>{
-                         console.error('An error occurred',e)
-                     })
-                  break
-          }
-          if(RouteName){
-              NavigationUtil.goPage(params,RouteName)
-          }
+       onClick(tab){
+         if(!tab) return
+         if(tab.url){
+             NavigationUtil.goPage({
+                 title:tab.title,
+                 url:tab.url,
+             },'WebViewPage')
+             return
+         }
+         if(tab.account&&tab.account.indexOf('@')>-1){
+             const url='mailto://'+tab.account
+             Linking.canOpenURL(url)
+                 .then(support=>{
+                     if(!support){
+                         console.log('Can\'t handle url:'+url)
+                     }else{
+                         Linking.openURL(url)
+                     }
+                 })
+                 .catch(e=>{
+                     console.error('An error occurred',e)
+                 })
+             return
+         }
+         if(tab.account){
+             Clipboard.setString(tab.account)
+             this.toast.show(tab.title+tab.account+'已复制到剪切板。')
+         }
        }
 
        // getItem(menu){
@@ -149,6 +152,12 @@ export default class AboutMePage extends Component<Props> {
             <View style={GlobalStyles.line}/>
             {this.state.showContact?this.renderItems(this.state.data.aboutMe.Contact.items,true):null}
         </View>
-           return this.aboutCommon.render(content,this.state.data.author)
+           return <View style={{flex:1}}>
+               {this.aboutCommon.render(content,this.state.data.author)}
+               <Toast
+                 ref={toast=>this.toast=toast}
+                 position={'center'}
+               />
+           </View>
        }
 }
