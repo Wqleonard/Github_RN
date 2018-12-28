@@ -26,15 +26,18 @@ import FavoriteUtil from "../util/FavoriteUtil";
 import EventBus from "react-native-event-bus";
 import EventTypes from "../util/EventTypes";
 import GlobalStyles from "../res/styles/GlobalStyles";
+import {FLAG_LANGUAGE} from "../expand/dao/LanguageDao";
+import ArrayUtil from "../util/ArrayUtil";
 const favoriteDao=new FavoriteDao(FLAG_STORAGE.flag_popular)
 const URL = 'https://api.github.com/search/repositories?&q='
 const QUERY_STR = '&sort=stars'
 type Props = {};
 const THEME_COLOR = '#678'
-export default class PopularPage extends Component<Props> {
+class PopularPage extends Component<Props> {
   constructor(props) {
     super(props)
-    this.tabNames = ['Java', 'Android', 'iOS', 'React', 'React Native', 'PHP']
+    const {onLoadLanguage}=this.props
+    onLoadLanguage(FLAG_LANGUAGE.flag_key)
   }
 
   // componentWillReceiveProps(nextProps): void {
@@ -45,15 +48,40 @@ export default class PopularPage extends Component<Props> {
 
     _getTabs() {
     const tabs = {}
-    this.tabNames.forEach((item, index) => {
-      tabs[`tab${index}`] = {
-        screen: props => <PopularTabPage {...props} tabLabel={item} />,
-        navigationOptions: {
-          title: item,
-        },
-      }
+    this.preKeys=this.props.keys
+        this.preKeys.forEach((item, index) => {
+        if(item.checked){
+            tabs[`tab${index}`] = {
+                screen: props => <PopularTabPage {...props} tabLabel={item.name} />,
+                navigationOptions: {
+                    title: item.name,
+                },
+            }
+        }
     })
     return tabs
+  }
+
+  _tabNav(){
+      if(!this.tabNav || !ArrayUtil.isEqual(this.preKeys,this.props.keys)) {
+          this.tabs = this._getTabs()
+              this.tabNav =  Object.keys(this.tabs).length?createAppContainer(createMaterialTopTabNavigator(
+                  this.tabs, {
+                      tabBarOptions: {
+                          tabStyle: styles.tabStyle,
+                          upperCaseLabel: false, // 是否标签大写，默认为true大写
+                          scrollEnabled: true, // 是否支持滚动，默认为false不滚动 android上会出问题，在style里设置一个高度
+                          style: {
+                              backgroundColor: THEME_COLOR, // tabBar背景色
+                              height: 30,//fix 开启scrollEnabled后在android上初次加载闪烁的问题
+                          },
+                          indicatorStyle: styles.indicatorStyle,//标签指示器的样式 横线
+                          labelStyle: styles.labelStyle, // 文字的样式
+                      },
+                  }
+              )):null
+      }
+      return this.tabNav
   }
 
     render() {
@@ -67,32 +95,27 @@ export default class PopularPage extends Component<Props> {
                 statusBar={statusBar}
                 style={{backgroundColor:THEME_COLOR,paddingTop: DeviceInfo.isIPhoneX_deprecated?30:0}}
             />
-    const TabNavigator = createAppContainer(createMaterialTopTabNavigator(
-      this._getTabs(), {
-        tabBarOptions: {
-          tabStyle: styles.tabStyle,
-          upperCaseLabel: false, // 是否标签大写，默认为true大写
-          scrollEnabled: true, // 是否支持滚动，默认为false不滚动 android上会出问题，在style里设置一个高度
-          style: {
-            backgroundColor: THEME_COLOR, // tabBar背景色
-            height: 30,//fix 开启scrollEnabled后在android上初次加载闪烁的问题
-          },
-          indicatorStyle:styles.indicatorStyle,//标签指示器的样式 横线
-          labelStyle: styles.labelStyle, // 文字的样式
-        },
-      }
-    ))
+    const TabNavigator=this._tabNav()
     return (
       <View
         style={{ flex: 1 }}
       >
           {navigationBar}
-        <TabNavigator />
+          {TabNavigator && <TabNavigator />}
       </View>
     )
   }
 }
+const mapPopularStateToProps=state=>({
+    keys:state.language.keys
+})
+const mapPopularDispatchToProps=dispatch=>({
+    onLoadLanguage: flag=>dispatch(actions.onLoadLanguage(flag))
+})
+export default connect(mapPopularStateToProps,mapPopularDispatchToProps)(PopularPage)
 const pageSize = 10 // 设置常量
+
+
 class PopularTab extends Component<Props> {
   constructor(props) {
     super(props)
