@@ -17,15 +17,12 @@ import actions from '../action/index'
 // import NavigationBar from '../common/NavigationBar'
 import NavigationBar from "../common/NavigationBar";
 import NavigationUtil from "../navigator/NavigationUtil";
-import FavoriteDao from "../expand/dao/FavoriteDao";
-import {FLAG_STORAGE} from "../expand/dao/DataStore";
+
 import {FLAG_LANGUAGE} from "../expand/dao/LanguageDao";
 import BackPressComponent from "../common/BackPressComponent";
 import LanguageDao from "../expand/dao/LanguageDao";
 import ViewUtil from "../util/ViewUtil";
-const favoriteDao=new FavoriteDao(FLAG_STORAGE.flag_popular)
-const URL = 'https://api.github.com/search/repositories?&q='
-const QUERY_STR = '&sort=stars'
+
 type Props = {};
 const THEME_COLOR = '#678'
 class CustomKeyPage extends Component<Props> {
@@ -46,20 +43,20 @@ class CustomKeyPage extends Component<Props> {
         }
     }
 
-  constructor(props) {
-    super(props)
-    this.params=this.props.navigation.state.params
-    const {flag}=this.params
-    this.backPress=new BackPressComponent({backPress:(e)=>this.onBackPress(e)})
-    this.changeValues=[]
-    this.isRemoveKey=!!this.params.isRemoveKey
-    this.title=this.isRemoveKey?'标签移除':flag===FLAG_LANGUAGE.flag_language?'自定义语言':'自定义标签'
-    this.rightButtonTitle=this.isRemoveKey?'移除':'保存'
-    this.languageDao=new LanguageDao(flag)
-    this.state={
-        keys:[]
+    constructor(props) {
+      super(props)
+      this.params=this.props.navigation.state.params
+      const {flag}=this.params
+      this.backPress=new BackPressComponent({backPress:(e)=>this.onBackPress(e)})
+      this.changeValues=[]
+      this.isRemoveKey=!!this.params.isRemoveKey
+      this.title=this.isRemoveKey?'标签移除':flag===FLAG_LANGUAGE.flag_language?'自定义语言':'自定义标签'
+      this.rightButtonTitle=this.isRemoveKey?'移除':'保存'
+      this.languageDao=new LanguageDao(flag)
+      this.state={
+          keys:[]
+      }
     }
-  }
 
     componentDidMount(): void {
         this.backPress.componentDidMount()
@@ -145,12 +142,14 @@ class CustomKeyPage extends Component<Props> {
     )
   }
 }
+
 const mapCustomStateToProps=state=>({
     language:state.language
 })
 const mapCustomDispatchToProps=dispatch=>({
     onLoadLanguage: flag=>dispatch(actions.onLoadLanguage(flag))
 })
+
 export default connect(mapCustomStateToProps,mapCustomDispatchToProps)(CustomKeyPage)
 const styles = StyleSheet.create({
     container: {

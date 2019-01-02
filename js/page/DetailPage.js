@@ -37,10 +37,10 @@ export default class DetailPage extends Component<Props> {
     }
     this.backPress=new BackPressComponent({backPress:()=>this.onBackPress()})
   }
+
   componentDidMount(): void {
     this.backPress.componentDidMount()
   }
-
 
   componentWillUnmount(): void {
     this.backPress.componentWillUnmount()
