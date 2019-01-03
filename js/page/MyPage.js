@@ -100,6 +100,11 @@ export default class MyPage extends Component<Props> {
                   params.isRemoveKey=menu===MORE_MENU.Remove_Key
                   params.flag=(menu !== MORE_MENU.Custom_Language)?FLAG_LANGUAGE.flag_key:FLAG_LANGUAGE.flag_language
                   break
+              case MORE_MENU.Sort_Key:
+              case MORE_MENU.Sort_Language:
+                  RouteName='SortKeyPage'
+                  params.flag=(menu !== MORE_MENU.Sort_Language)?FLAG_LANGUAGE.flag_key:FLAG_LANGUAGE.flag_language
+                  break
           }
           if(RouteName){
               NavigationUtil.goPage(params,RouteName)

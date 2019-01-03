@@ -18,6 +18,7 @@ import {
 import { connect } from 'react-redux'
 import CheckBox from 'react-native-check-box'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+// import _ from 'lodash'
 // import NavigationUtil from '../navigator/NavigationUtil'
 import actions from '../action/index'
 // import DetailPage from './DetailPage'
@@ -46,7 +47,14 @@ class CustomKeyPage extends Component<Props> {
        const {flag,isRemoveKey}=props.navigation.state.params
        const key=flag===FLAG_LANGUAGE.flag_key?'keys':'languages'
         if(isRemoveKey && !original){
-
+           //如果state中的keys为空则从props中取
+            return ((state && state.keys && state.keys.length !== 0 && state.keys) || props.languages[key]).map(val=>{
+                return {
+                    //注意不直接修改props，copy一份
+                    ...val,
+                    checked:false,
+                }
+            })
         }else{
             return props.languages[key]
         }
@@ -55,7 +63,7 @@ class CustomKeyPage extends Component<Props> {
     // 首次进去且tab主页没有点击过趋势，则languages为空，onLoadLanguage方法在本页第一次执行，异步的，state没接收到，需要在此方法重新setState
     static getDerivedStateFromProps(nextProps,prevState){
         const keys=CustomKeyPage._keys(nextProps,null,prevState)
-        if(prevState.keys!==keys){
+        if(prevState.keys && prevState.keys.length===0 && keys && keys.length>0){
             return {
                 keys
             }
@@ -131,8 +139,14 @@ class CustomKeyPage extends Component<Props> {
 
     onSave(){
       if(this.changeValues.length>0){
+          let keys
+          if(this.isRemoveKey){ //移除标签的特殊处理
+             for(const item of this.changeValues){
+                 ArrayUtil.remove(keys=CustomKeyPage._keys(this.props,true),item,'name')
+             }
+          }
           //更新本地数据
-          this.languageDao.save(this.state.keys)
+          this.languageDao.save(keys || this.state.keys)
           //更新store
           const {onLoadLanguage}=this.props
           onLoadLanguage(this.params.flag)
@@ -141,10 +155,11 @@ class CustomKeyPage extends Component<Props> {
     }
 
     onClick(data,index){
-       data.checked=!data.checked
+       const newKeys=[...this.state.keys]
+       newKeys[index]={...data,checked: !data.checked}
        ArrayUtil.updateArray(this.changeValues,data)
        this.setState({
-           keys:this.state.keys
+           keys:newKeys
        })
     }
 
