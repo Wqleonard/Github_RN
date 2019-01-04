@@ -17,7 +17,7 @@ const navReducer = (state = navState, action) => {
 }
 
 // 3.合并reducer
-const index = combineReducers({
+const appReducer = combineReducers({
   nav: navReducer,
   theme,
   popular,
@@ -25,5 +25,12 @@ const index = combineReducers({
   favorite,
   language,
 })
+// const rootReducer = (state, action) => {
+//   if (action.type === 'USER_LOGOUT') {
+//     state = undefined;//清空store
+//   }
+//   return appReducer(state, action)
+// };
+// export default rootReducer;
 
-export default index
+export default appReducer
